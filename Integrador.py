@@ -10,11 +10,13 @@ host = 'kuririn'
 
 def callback_RPC(boddy):
     print('[!] INICIANDO RPC')
+    # print(f'AQUI CHEGOU O BODDY {boddy}')
     payload = json.loads(boddy)
+    # print(type(payload))
     cliente = json.loads(payload.get('msg'))
-    print(cliente)
-    cpf = cliente.get('naturalPersonData')
-    print(cpf)
+    naturalPersonData = cliente.get('naturalPersonData')
+    cpf = naturalPersonData['cpf']
+    print(f'AQUI ESTÁ O CPF QUE ESTÁ CHEGANDO : {cpf}')
 
 ############# MAIN #############
 try :
