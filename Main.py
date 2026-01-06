@@ -16,7 +16,7 @@ try:
     RPC = RPCExchange2(amqps    = amps,
                        origin   = host,
                        system   = system,
-                       service  = 'itegradorcliente',
+                       service  = 'integradorcliente',
                        version  = version)
 except Exception as ex:
     print(f'[!] RPC Offiline ->', ex)
@@ -27,5 +27,8 @@ def get_idCliente(payload: dict):
     print('REQUISIÇÃO RECEBIDA PARA CADASTRO', flush= True)
     print(f'Payload Recebido: {payload}')
 
-    response = RPC.callRPC(message=json.dumps(payload), timeout=10)
-    return {"message": "Integracao Cliente Endpoint is running"}
+    response = RPC.callRPC(message=json.loads(payload, timeout=10))
+    return {"message": "Integracao Cliente Endpoint is running",
+            "menssagem": "Cliete Cadastrado com Sucesso",
+            "resposta_rpc": response
+            }

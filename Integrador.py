@@ -9,22 +9,23 @@ version = 'V1.01 - Integrador De Cliente'
 host = 'kuririn'
 
 def callback_RPC(boddy):
+    print('[!] INICIANDO RPC')
     payload = json.loads(boddy)
     cliente = json.loads(payload.get('msg'))
+    print(cliente)
     cpf = cliente.get('naturalPersonData')
     print(cpf)
 
 ############# MAIN #############
-try:
-    RPC = RPCExchange2(amqps= amqps,
-                       origin= host,
-                       system = system,
-                       service = service,
-                       version= version,
-                       workfunction= callback_RPC)
+try :
+    RPC = RPCExchange2(amqps        = amqps,
+                       origin       = host,
+                       system       = system,
+                       service      = 'integradorcliente',
+                       version      = version,
+                       workfunction = callback_RPC)
 except Exception as ex:
-    print('[!] Erro ao receber payload')
-
+    print("[!] Erro ao receber payload")
 try:
     RPC.start_consuming()
 except Exception as ex:
