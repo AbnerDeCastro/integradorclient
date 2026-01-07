@@ -22,12 +22,13 @@ except Exception as ex:
     print(f'[!] RPC Offiline ->', ex)
 
 @app.post("/cadastro-cliente")
-def get_idCliente(boddy: dict):
+def get_idCliente(body: dict):
 
     print('REQUISIÇÃO RECEBIDA PARA CADASTRO', flush= True)
-    print(f'Payload Recebido: {boddy}')
+    print(f'Payload Recebido: {body}')
 
-    response = RPC.callRPC(message=json.dumps(boddy), timeout=10)
+    response = RPC.callRPC(message=json.dumps(body), timeout=10)
+    
     return {"message": "Integracao Cliente Endpoint is running",
             "menssagem": "Cliete Cadastrado com Sucesso",
             "resposta_rpc": response
