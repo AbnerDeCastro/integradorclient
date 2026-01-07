@@ -47,16 +47,73 @@ def validar_e_limpar_cpf(cpf: str) -> str | None:
     return cpf_limpo
 
 
+# Consulta API SIEGNE
+url = "https://api.sienge.com.br/s8psasistemas/public/api/v1"
+username = "s8psasistemas-midd"
+password = "fq3LdZzvTJq8u8oeASFhVkYV20NIac41"
+
+def consultarapi(cliente):
+    endpoint = f"{url}/customers?cpf={cliente}"
+    print(endpoint)
+    # Fazendo Requisição GET
+    response = requests.get(endpoint, auth=(username, password))
+
+    if response.status_code == 200:
+        return True, response.json() # Retorna dados JSON
+    else:
+        print(response.json().get('msg'), None)
+        return False, {"ERRO:" f"Falha ao obter dados {response.status_code}"}
+
+def cadastrar_cliente(cliente):
+    endpoint = f"{url}/customers?insert={cliente}"
+
+    print("[!] Cliente Recebido para cadastro com Sucesso !.", flush=True)
+    
+    response = requests.post(
+        endpoint,
+        json = cliente,
+        auth=(username, password)
+    )
+    print("[!] Modelo de cliente a ser enviado:", cliente)
+    print("Status:", "Cliente Cadastrado com sucesso" if response.status_code == 201 else "ERRO Ao cadastrar Clinte")
+    print("Response:", "201 Criado" if response.status_code == 201 else response.txt)
+
+    if response.status_code == 201:
+        return "[!] Cliente Cadastrado com Sucesso"
+    else:
+        return "[!] Erro ao cadastrar cliente"
+
+
 def callback_RPC(body):
     print('[!] INICIANDO RPC')
     payload = json.loads(body)
     cliente =json.loads(payload.get('msg'))
     naturalPersonData = cliente.get('naturalPersonData')
-    print(f'ESTÁ CHEGANDO AQUI: {naturalPersonData}')
+    print(f'[!] Payload Recebido com sucesso !.')
     cpf = naturalPersonData.get('cpf')
     cpf_limpo = validar_e_limpar_cpf(cpf)
-    print(cpf_limpo)
     response = {"cpf": cpf_limpo}
+    
+    print(f"> Cliente recebido para verificar no Sienge < {cpf_limpo}")
+    status, resultado = consultarapi(cpf_limpo)
+    print(f'[!] RESULTADO DO GET: {resultado}')
+
+    if not status:
+        print(f"FALHA NA CONSULTA DO SIENGE {resultado}")
+        return
+    
+    if "results" in resultado:
+        cadastro = resultado.get('results')
+        if cadastro == []:
+            print(f'Cliente Não Cadastrado {cpf_limpo}')
+    else:
+        raise(f"RESULTS NA EXISTE NA RESPOSTA: {cpf_limpo}")
+    
+    print(f'CADASTRO: {cadastro}')
+
+    if not len(cadastro) == 0:
+        print("Cliente Já existe !")
+
     return json.dumps(response)
 
 ############# MAIN #############
@@ -69,7 +126,7 @@ try :
                        workfunction = callback_RPC)
 except Exception as ex:
     print("[!] Erro ao receber payload")
-    
+
 try:
     RPC.start_consuming()
 except Exception as ex:
