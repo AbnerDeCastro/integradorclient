@@ -76,12 +76,22 @@ def cadastrar_cliente(cliente):
     )
     print("[!] Modelo de cliente a ser enviado:", cliente)
     print("Status:", "Cliente Cadastrado com sucesso" if response.status_code == 201 else "ERRO Ao cadastrar Clinte")
-    print("Response:", "201 Criado" if response.status_code == 201 else response.txt)
+    print("Response:", "201 Criado" if response.status_code == 201 else response.json())
 
     if response.status_code == 201:
         return "[!] Cliente Cadastrado com Sucesso"
     else:
         return "[!] Erro ao cadastrar cliente"
+
+
+def tratar_conjuge(civilStatus: str):
+    map = {
+        "1": "Solteiro",
+        "2": "Casado(a)",
+        "3": "Divorciado(a)",
+        "4": "Viúvo"
+    }
+    return map.get(civilStatus, "1") # Retorna 1 caso status civil não for informado/encontrado
 
 
 def callback_RPC(body):
@@ -90,8 +100,13 @@ def callback_RPC(body):
     cliente =json.loads(payload.get('msg'))
     naturalPersonData = cliente.get('naturalPersonData')
     print(f'[!] Payload Recebido com sucesso !.')
+    # Tratando CPF
     cpf = naturalPersonData.get('cpf')
     cpf_limpo = validar_e_limpar_cpf(cpf)
+    # Tratando Status Civil
+    civilStatus = naturalPersonData.get('civilStatus')
+    print(f'AQUI O STATUS CIVIL {civilStatus}')
+
     response = {"cpf": cpf_limpo}
     
     print(f"> Cliente recebido para verificar no Sienge < {cpf_limpo}")
@@ -113,6 +128,12 @@ def callback_RPC(body):
 
     if not len(cadastro) == 0:
         print("Cliente Já existe !")
+
+    try:
+        cadastrar_cliente(body)
+    except ValueError as err:
+        print(f'[ERRO] Erro ao cadastrar cliente', err, flush=True)
+        return
 
     return json.dumps(response)
 
