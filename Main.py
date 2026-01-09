@@ -119,7 +119,10 @@ def get_idCliente(body: dict):
     print(f'Payload Recebido: {body}')
 
     response = RPC.callRPC(message=json.dumps(body), timeout=10)
+    msg = json.loads(response).get('msg')
+    retorno = json.loads(msg)
+
     return {"message": "Integracao Cliente Endpoint is running",
             "menssagem": "Cliete Cadastrado com Sucesso",
-            "resposta_rpc": response
+            "resposta_rpc": retorno
             }

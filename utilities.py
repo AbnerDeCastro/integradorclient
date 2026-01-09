@@ -83,11 +83,83 @@ def cadastrar_cliente(cliente):
 
 # -----------------------------------------------
 
-def tratar_conjuge(civilStatus: str):
-    map = {
-        "1": "Solteiro",
-        "2": "Casado(a)",
-        "3": "Divorciado(a)",
-        "4": "Viúvo"
+def normalizar_estado_civil(valor: str) -> str:
+    chave = valor.strip().lower()
+
+    ESTADO_CIVIL_MAP = {
+    "solteiro": "SOLTEIRO",
+    "solteira": "SOLTEIRO",
+    "casado": "CASADO",
+    "casada": "CASADO",
+    "divorciado": "DIVORCIADO",
+    "divorciada": "DIVORCIADO",
+    "viuvo": "VIUVO",
+    "viúva": "VIUVO",
+    "uniao_estavel": "UNIAO_ESTAVEL",
+    "união estável": "UNIAO_ESTAVEL",
     }
-    return map.get(civilStatus, "1") # Retorna 1 caso status civil não for informado/encontrado
+
+    if chave not in ESTADO_CIVIL_MAP:
+        raise ValueError(f"Estado civil inválido: {valor}")
+    return ESTADO_CIVIL_MAP[chave]
+
+
+def tratar_conjuge(spouse: dict | None) -> dict | None:
+    """
+    Trata os dados do cônjuge para o padrão esperado pelo Sienge.
+    Retorna None se não houver cônjuge válido.
+    """
+
+    if not spouse or not isinstance(spouse, dict):
+        return None
+
+    def get(field):
+        value = spouse.get(field)
+        if value in ("", None):
+            return None
+        return value
+
+    conjuge = {
+        "name": get("name"),
+        "cpf": get("cpf"),
+        "birthDate": get("birthDate"),
+        "sex": get("sex"),
+        "civilStatus": get("civilStatus"),
+        "nationality": get("nationality"),
+        # "profession": get("profession"),
+        "numberIdentityCard": get("numberIdentityCard"),
+        "issuingBody": get("issuingBody"),
+        "issueDateIdentityCard": get("issueDateIdentityCard"),
+        "email": get("email"),
+    }
+
+    # Remove campos None (Sienge rejeita)
+    conjuge = {k: v for k, v in conjuge.items() if v is not None}
+
+    # CPF deve conter apenas números
+    if "cpf" in conjuge:
+        conjuge["cpf"] = re.sub(r"\D", "", conjuge["cpf"])
+
+    return conjuge if conjuge else None
+
+def consultar_todas_profissoes(profession: str):
+    try:
+        endpoint = f"{url}/professions?name={profession}"
+        print(endpoint)
+        response = requests.get(endpoint, auth=(username, password))
+
+        if response.status_code == 200:
+            dados = response.json()
+            if "results" in dados and len(dados["results"]) > 0:
+                profissao = dados["results"][0]
+                return profissao["name"]
+            else:
+                print(f"Profissão '{profession}' não encontrada.")
+                
+                return None
+        else:
+            print(f"Erro ao consultar profissões: {response.status_code}")
+            return None
+    except Exception as err:
+        print(f"Erro ao consultar profissões: {err}")
+        return None        

@@ -47,7 +47,11 @@ def callback_RPC(body):
     print(f'CADASTRO: {cadastro}')
 
     if not len(cadastro) == 0:
-        print("Cliente Já existe !")
+        print(f"Cliente Já existe ! {cadastro}")
+        id_cliente = cadastro[0]['id'] # ID do cliente caso já tenha CADASTRADO
+        print(f'AQUI O ID DO CLIENTE {id_cliente}')
+
+        return json.dumps({"id": id_cliente})
     
     # VALIDANDO ENDECO
     try:
@@ -98,7 +102,7 @@ def callback_RPC(body):
             email                 = cliente['naturalPersonData']['email'],
             birthDate             = cliente['naturalPersonData']['birthDate'],
             birthPlace            = cliente['naturalPersonData']['birthPlace'],
-            civilStatus           = cliente['naturalPersonData']['civilStatus'].upper(),
+            civilStatus           = normalizar_estado_civil(cliente['naturalPersonData']['civilStatus']),
             cpf                   = cpf_limpo,
             mailingAddress        = cliente['naturalPersonData']['mailingAddress'],
             licenseNumber         = cliente['naturalPersonData']['licenseNumber'],
@@ -113,11 +117,12 @@ def callback_RPC(body):
             nationality           = cliente['naturalPersonData']['nationality'],
             numberIdentityCard    = cliente['naturalPersonData']['numberIdentityCard'],
             motherName            = cliente['naturalPersonData']['motherName'],
-            profession            = cliente['naturalPersonData']['profession'],
-            spouse                = cliente['naturalPersonData']['spouse']
+            profession            = consultar_todas_profissoes(cliente['naturalPersonData']['profession']),
+            spouse                = tratar_conjuge(cliente['naturalPersonData']['spouse'])
         )
+
     except ValidationError as err:
-        print(f"ERRO NATURALPERSONDATA", flush=True)
+        print(f"ERRO NATURALPERSONDATA", err, flush=True)
         return
     print("NATURALPERSONDATA VALIDADO COM SUCESSO", flush=True)
 
@@ -139,7 +144,7 @@ def callback_RPC(body):
         insert_cliente = Person (
             personType=cliente['personType'],
             addresses = [addresses],
-            phone = [phone],
+            phones = [phone],
             naturalPersonData = naturalPersonData
         )
         print(f'MODELO DE CLIENTE PARA ENVIO SENDO PRINTADO AQUI {insert_cliente}', flush=True)
@@ -155,7 +160,7 @@ def callback_RPC(body):
     
     # CADASTRANDO CLIENTE
     try:
-        cadastrar_cliente(insert_cliente.model_dump_json())
+        cadastrar_cliente(insert_cliente.model_dump())
     except ValidationError as err:
         print(f"[ ! ] ERRO AO CADASTRAR CLIENTE:", err, flush=True)
         return
