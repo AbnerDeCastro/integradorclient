@@ -12,91 +12,94 @@ service = 'endpoit'
 system = 'cadastro-cliente'
 host = 'pc-abner'
 
-# Criando Objeto de Cliente para consumo SIENGE
+#------CRIANDO OBJETO A SER ENVIADO SIENGE ---------
 
-class Address(BaseModel):
-    type: Optional[str] = None
-    streetName: Optional[str] = None
-    number: Optional[str] = None
-    complement: Optional[str] = None
-    neighborhood: Optional[str] = None
-    cityId: Optional[int] = None
-    city: Optional[str] = None
-    state: Optional[str] = None
-    zipCode: Optional[str] = None
+# -------------------Address------------------------
 
-class Phone(BaseModel):
-    number: str
-    main: Optional[bool] = None
-    type: Optional[str] = None
-    note: Optional[str] = None
-    idd: Optional[str] = None
+class Address(BaseModel): 
+      type              : str | None = None
+      streetName        : str | None = None
+      number            : str | None = None
+      complement        : str | None = None
+      neighborhood      : str | None = None
+      cityId            : str | None = None
+      city              : str | None = None
+      state             : str | None = None
+      zipCode           : str | None = None
 
-class NaturalPersonData(BaseModel):
-    name: str
-    email: Optional[str] = None
-    birthDate: Optional[str] = None
-    birthPlace: Optional[str] = None
-    civilStatus: Optional[str] = None
-    cpf: str
-    mailingAddress: Optional[str] = None
-    licenseNumber: Optional[str] = None
-    licenseIssuingBody: Optional[str] = None
-    licenseIssueDate: Optional[str] = None
-    fatherName: Optional[str] = None
-    sex: Optional[str] = None
-    issueDateIdentityCard: Optional[str] = None
-    matrimonialRegime: Optional[str] = None
-    marriageDate: Optional[str] = None
-    issuingBody: Optional[str] = None
-    nationality: Optional[str] = None
-    numberIdentityCard: Optional[str] = None
-    motherName: Optional[str] = None
-    profession: Optional[str] = None
-    # spouse: Optional[Spouse] = None
+# ---------- Phone ----------
 
-class Agent(BaseModel):
-    id: int
+class Phone(BaseModel): 
+      number          : str | None = None
+      main            : bool | None = None
+      type            : str | None = None
+      note            : str | None = None
+      idd             : str | None = None
 
-class LegalPersonData(BaseModel):
-    name: str
-    email: Optional[str] = None
-    cityRegistrationNumber: Optional[str] = None
-    cnaeNumber: Optional[str] = None
-    cnpj: str
-    contactName: Optional[str] = None
-    creaNumber: Optional[str] = None
-    establishmentDate: Optional[str] = None
-    fantasyName: Optional[str] = None
-    note: Optional[str] = None
-    site: Optional[str] = None
-    shareCapital: Optional[float] = None
-    stateRegistrationNumber: Optional[str] = None
-    technicalManager: Optional[str] = None
-    agents: Optional[List[Agent]] = None
+# ---------- Spouse Address ----------
 
+class SpouseAddress(BaseModel): 
+      city                    : str | None = None
+      complement              : str | None = None
+      neighborhood            : str | None = None
+      number                  : str | None = None
+      streetName              : str | None = None
+      zipCode                 : str | None = None
 
-class Spouse(BaseModel):
-    foreigner: Optional[str] = None
-    internationalId: Optional[str] = None
-    cpf: Optional[str] = None
-    name: Optional[str] = None
-    email: Optional[str] = None
-    sex: Optional[str] = None
-    civilStatus: Optional[str] = None
-    birthDate: Optional[str] = None
-    numberIdentityCard: Optional[str] = None
-    issueDateIdentityCard: Optional[str] = None
-    profession: Optional[str] = None
-    nationality: Optional[str] = None
-    birthPlace: Optional[str] = None
-    fatherName: Optional[str] = None
-    motherName: Optional[str] = None
-    cellphoneNumber: Optional[str] = None
-    businessPhone: Optional[str] = None
-    company: Optional[str] = None
-    addresses: Optional[Address] = None
+# ---------- Spouse ----------
 
+class Spouse(BaseModel)    : 
+      foreigner            : str | None = None
+      internationalId      : str | None = None
+      cpf                  : str | None = None
+      name                 : str | None = None
+      email                : str | None = None
+      sex                  : str
+      civilStatus          : str | None = None
+      birthDate            : str | None = None
+      numberIdentityCard   : str | None = None
+      issueDateIdentityCard: str | None = None
+      profession           : str | None = None
+      nationality          : str | None = None
+      birthPlace           : str | None = None
+      fatherName           : str | None = None
+      motherName           : str | None = None
+      cellphoneNumber      : str | None = None
+      businessPhone        : str | None = None
+      company              : str | None = None
+      addresses            : SpouseAddress | None = None
+
+# ---------- Natural Person Data ----------
+
+class NaturalPersonData(BaseModel): 
+      name                        : str
+      email                       : str | None = None
+      birthDate                   : str | None = None
+      birthPlace                  : str | None = None
+      civilStatus                 : str | None = None
+      cpf                         : str
+      mailingAddress              : str | None = None
+      licenseNumber               : str | None = None
+      licenseIssuingBody          : str | None = None
+      licenseIssueDate            : str | None = None
+      fatherName                  : str | None = None
+      sex                         : str
+      issueDateIdentityCard       : str | None = None
+      matrimonialRegime           : str | None = None
+      marriageDate                : str | None = None
+      issuingBody                 : str | None = None
+      nationality                 : str | None = None
+      numberIdentityCard          : str | None = None
+      motherName                  : str | None = None
+      profession                  : str | None = None
+      spouse                      : Spouse | None = None
+
+# ---------- Root Model ----------
+class Person(BaseModel): 
+      personType       : str
+      addresses        : list[Address] | None = None
+      phones           : list[Phone] | None = None
+      naturalPersonData: NaturalPersonData | None = None
 
 # CRIANDO CONEXÃO RPC
 amps = 'amqps://vlguashe:7MvzDbMfN6oQ2NyAZoDyZw_oKTWhvm43@jackal.rmq.cloudamqp.com/vlguashe'
