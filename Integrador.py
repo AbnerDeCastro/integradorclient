@@ -2,6 +2,8 @@ from Exchange2 import RPCExchange2
 import json, requests, re
 import re
 from utilities import*
+from pydantic import BaseModel, ValidationError
+from Main import Person, NaturalPersonData, Phone, Address
 
 amqps = 'amqps://vlguashe:7MvzDbMfN6oQ2NyAZoDyZw_oKTWhvm43@jackal.rmq.cloudamqp.com/vlguashe'
 origin = 'pc-abner'
@@ -46,11 +48,116 @@ def callback_RPC(body):
 
     if not len(cadastro) == 0:
         print("Cliente Já existe !")
+    
+    # VALIDANDO ENDECO
+    try:
+        print("VALIDANDO ENDERECO",flush=True)
+        if 'addresses' not in cliente:
+            print("SEM ENDEREÇO", flush=True)
+            return
+        endereco = cliente['addresses'][0]
+        addresses = Address (
+            type         = endereco['type'],
+            streetName   = endereco['streetName'],
+            number       = endereco['number'],
+            complement   = endereco['complement'],
+            neighborhood = endereco['neighborhood'],
+            cityId       = '9',
+            city         = 'goiania',
+            state        = endereco['state'],
+            zipCode      = endereco['zipCode']
+        )
+    except ValidationError as err:
+        print(f"ERRO DE VALIDAÇÃO: ", err, flush=True)
+        return
+    
+    try:
+        print("VALIDANDO TELEFONE", flush=True)
+        if 'phones' not in cliente:
+            print("SEM TELEFONE", err, flsuh=True)
+            return
+        telefone = cliente['phones'][0]
+        phone = Phone(
+                number = telefone['number'],
+                main   = telefone['main'],
+                type   = telefone['type'],
+                note   = telefone['note'],
+                idd    = telefone['idd']
+            )
+    except ValidationError as err:
+        print(f"ERRO DE VALIDAÇÃO: ", err, flush=True)
+        return
 
     try:
-        cadastrar_cliente(body)
-    except ValueError as err:
-        print(f'[ERRO] Erro ao cadastrar cliente', err, flush=True)
+        print("MONTANDO MODELO DE CLIENTE", flush= True)
+        if 'naturalPersonData' not in cliente:
+            print("SEM INFORMAÇÕES DE PESSOA FÍSICA", flsuh = True)
+            return 
+        naturalPersonData = NaturalPersonData(
+            name                  = cliente['naturalPersonData']['name'],
+            email                 = cliente['naturalPersonData']['email'],
+            birthDate             = cliente['naturalPersonData']['birthDate'],
+            birthPlace            = cliente['naturalPersonData']['birthPlace'],
+            civilStatus           = cliente['naturalPersonData']['civilStatus'].upper(),
+            cpf                   = cpf_limpo,
+            mailingAddress        = cliente['naturalPersonData']['mailingAddress'],
+            licenseNumber         = cliente['naturalPersonData']['licenseNumber'],
+            licenseIssuingBody    = cliente['naturalPersonData']['licenseIssuingBody'],
+            licenseIssueDate      = cliente['naturalPersonData']['licenseIssueDate'],
+            fatherName            = cliente['naturalPersonData']['fatherName'],
+            sex                   = cliente['naturalPersonData']['sex'],
+            issueDateIdentityCard = cliente['naturalPersonData']['issueDateIdentityCard'],
+            matrimonialRegime     = cliente['naturalPersonData']['matrimonialRegime'],
+            marriageDate          = cliente['naturalPersonData']['marriageDate'],
+            issuingBody           = cliente['naturalPersonData']['issuingBody'],
+            nationality           = cliente['naturalPersonData']['nationality'],
+            numberIdentityCard    = cliente['naturalPersonData']['numberIdentityCard'],
+            motherName            = cliente['naturalPersonData']['motherName'],
+            profession            = cliente['naturalPersonData']['profession'],
+            spouse                = cliente['naturalPersonData']['spouse']
+        )
+    except ValidationError as err:
+        print(f"ERRO NATURALPERSONDATA", flush=True)
+        return
+    print("NATURALPERSONDATA VALIDADO COM SUCESSO", flush=True)
+
+    # VALIDANDO PERSONTYPE
+    try:
+        print("VALIDANDO PERSONTYPE", flush=True)
+        if 'personType' not in cliente:
+            print("SEM PERSONTYPE", err, flush=True)
+            return
+        personType = cliente['personType']
+    except ValidationError as err:
+        print(f"ERRO DE VALIDAÇÃO:", err, flush=True)
+        return
+
+
+    # MONTANDO MODELO DE CLIENTE PARA ENVIO      
+    try:
+        print("MONTANDO MODELO DE CLIENTE PARA ENVIO", flush=True)
+        insert_cliente = Person (
+            personType=cliente['personType'],
+            addresses = [addresses],
+            phone = [phone],
+            naturalPersonData = naturalPersonData
+        )
+        print(f'MODELO DE CLIENTE PARA ENVIO SENDO PRINTADO AQUI {insert_cliente}', flush=True)
+        print(type(insert_cliente), flush = True)
+        
+    except ValidationError as err:
+        print(f"[ ! ] ERRO DE FROMACAO DE MODELO CLIENTE: ", err, flush=True)
+        return
+    except Exception as ex:
+        print(f"[ ! ] ERRO INESPERADO: ", ex, flush=True)
+        return
+    print("MODELO DE CLIENTE MONTADO COM SUCESSO", flush=True)
+    
+    # CADASTRANDO CLIENTE
+    try:
+        cadastrar_cliente(insert_cliente.model_dump_json())
+    except ValidationError as err:
+        print(f"[ ! ] ERRO AO CADASTRAR CLIENTE:", err, flush=True)
         return
 
     return json.dumps(response)
