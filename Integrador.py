@@ -4,6 +4,7 @@ import re
 from utilities import*
 from pydantic import BaseModel, ValidationError
 from Main import Person, NaturalPersonData, Phone, Address
+from BrasilAPI import *
 
 amqps = 'amqps://vlguashe:7MvzDbMfN6oQ2NyAZoDyZw_oKTWhvm43@jackal.rmq.cloudamqp.com/vlguashe'
 origin = 'pc-abner'
@@ -19,12 +20,16 @@ def callback_RPC(body):
     payload = json.loads(body)
     cliente =json.loads(payload.get('msg'))
     naturalPersonData = cliente.get('naturalPersonData')
+    zipCode = cliente.get('addresses')[0].get('zipCode')
+    print(f'AQUI O TYPE DO CEP {type(zipCode)}', flush= True)
     print(f'[!] Payload Recebido com sucesso !.')
     # Tratando CPF
     cpf = naturalPersonData.get('cpf')
     cpf_limpo = validar_e_limpar_cpf(cpf)
     print(f"AQUI O CPF: {cpf}")
     print(f"AQUI O CPF LIMPO: {cpf_limpo}")
+    print(f'AQUI O ZIPCODE {zipCode}')
+    print(f'AQUI O CEP COM A API {get_cep(zipCode)}')
     # Tratando Status Civil
     civilStatus = naturalPersonData.get('civilStatus')
     # print(f'AQUI O STATUS CIVIL {civilStatus}', flush=True)
@@ -62,15 +67,22 @@ def callback_RPC(body):
             print("SEM ENDEREÇO", flush=True)
             return
         endereco = cliente['addresses'][0]
-        addresses = Address (
+        # Descobre cidade e estado pelo CEP
+        cidade, estado = get_city_state_by_cep(zipCode)
+
+        # Busca o cityId correto no Sienge
+        city_id = get_city_id_sienge(cidade, estado)
+
+        # Monta endereço válido para o Sienge
+        addresses = Address(
             type         = endereco['type'],
             streetName   = endereco['streetName'],
             number       = endereco['number'],
-            complement   = endereco['complement'],
+            complement   = endereco.get('complement'),
             neighborhood = endereco['neighborhood'],
-            cityId       = '9',
-            city         = 'goiania',
-            state        = endereco['state'],
+            cityId       = city_id,
+            city         = cidade,
+            state        = estado,
             zipCode      = endereco['zipCode']
         )
     except ValidationError as err:

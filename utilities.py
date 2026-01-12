@@ -1,3 +1,4 @@
+from BrasilAPI import get_cep
 from Exchange2 import RPCExchange2
 import json, requests, re
 import re
@@ -162,4 +163,27 @@ def consultar_todas_profissoes(profession: str):
             return None
     except Exception as err:
         print(f"Erro ao consultar profissões: {err}")
-        return None        
+        return None
+
+def get_city_state_by_cep(zipcode):
+    status, data = get_cep(zipcode)
+    if not status:
+        raise Exception("CEP inválido ou não encontrado")
+
+    return data['city'], data['state']
+        
+def get_city_id_sienge(city, state):
+    url = f"https://api.sienge.com.br/s8psasistemas/public/api/v1/cities"
+    params = {
+        "name": city,
+        "state": state
+    }
+    response = requests.get(url, auth=(username, password))
+    response.raise_for_status()
+
+    results = response.json().get("results", [])
+
+    if not results:
+        raise Exception(f"Cidade não encontrada no Sienge: {city}-{state}")
+
+    return str(results[0]["id"])
