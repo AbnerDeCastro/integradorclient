@@ -8,7 +8,7 @@ url = "https://api.sienge.com.br/s8psasistemas/public/api/v1"
 username = "s8psasistemas-midd"
 password = "fq3LdZzvTJq8u8oeASFhVkYV20NIac41"
 
-def validar_e_limpar_cpf(cpf: str) -> str | None:
+def validar_e_limpar_cpf(cpf: str) -> str :
     """
     Recebe um CPF, remove caracteres não numéricos,
     valida o CPF e retorna o CPF limpo.

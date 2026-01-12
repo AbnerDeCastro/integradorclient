@@ -23,6 +23,8 @@ def callback_RPC(body):
     # Tratando CPF
     cpf = naturalPersonData.get('cpf')
     cpf_limpo = validar_e_limpar_cpf(cpf)
+    print(f"AQUI O CPF: {cpf}")
+    print(f"AQUI O CPF LIMPO: {cpf_limpo}")
     # Tratando Status Civil
     civilStatus = naturalPersonData.get('civilStatus')
     # print(f'AQUI O STATUS CIVIL {civilStatus}', flush=True)
