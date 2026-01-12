@@ -25,13 +25,13 @@ def callback_RPC(body):
     cpf_limpo = validar_e_limpar_cpf(cpf)
     # Tratando Status Civil
     civilStatus = naturalPersonData.get('civilStatus')
-    print(f'AQUI O STATUS CIVIL {civilStatus}', flush=True)
+    # print(f'AQUI O STATUS CIVIL {civilStatus}', flush=True)
 
     response = {"cpf": cpf_limpo}
     
     print(f"> Cliente recebido para verificar no Sienge < {cpf_limpo}")
     status, resultado = consultarapi(cpf_limpo)
-    print(f'[!] RESULTADO DO GET: {resultado}')
+    # print(f'[!] RESULTADO DO GET: {resultado}')
 
     if not status:
         print(f"FALHA NA CONSULTA DO SIENGE {resultado}")
@@ -47,7 +47,7 @@ def callback_RPC(body):
     print(f'CADASTRO: {cadastro}')
 
     if not len(cadastro) == 0:
-        print(f"Cliente Já existe ! {cadastro}")
+        # print(f"Cliente Já existe ! {cadastro}")
         id_cliente = cadastro[0]['id'] # ID do cliente caso já tenha CADASTRADO
         print(f'AQUI O ID DO CLIENTE {id_cliente}')
 
