@@ -294,7 +294,7 @@ Este projeto está sob a licença MIT. Veja o arquivo `LICENSE` para mais detalh
 
 **Abner de Castro**
 - GitHub: [@AbnerDeCastro](https://github.com/AbnerDeCastro)
-- Email: abner.decastro@email.com
+- Email: castroabner93@gmail.com
 
 ## 📞 Suporte
 
